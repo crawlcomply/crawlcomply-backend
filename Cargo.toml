@@ -1,0 +1,24 @@
+[package]
+name = "crawlcomply-backend"
+description = "CrawlComply backend (database schemas; API routes; &etc.)"
+version = "0.0.1"
+edition = "2021"
+license = "Apache-2.0 OR MIT"
+
+[dependencies]
+actix-web = "^4"
+actix-web-httpauth = "^0.8"
+bigdecimal = { version = "0.4.8", features = ["serde", "serde-json"] }
+chrono = { version = "^0.4", features = ["serde"] }
+diesel = { version = "^2.2", features = ["postgres", "chrono", "numeric", "r2d2", "serde_json"] }
+diesel_migrations = { version = "^2.2", features = ["postgres"] }
+lazy_static = "^1.5"
+log = "^0.4"
+rust-actix-diesel-auth-scaffold = { path = "../rust-actix-diesel-auth-scaffold" }
+# rust-actix-diesel-auth-scaffold = { git = "https://github.com/offscale/rust-actix-diesel-auth-scaffold" }
+serde = { version = "^1", features = ["derive"] }
+serde_json = "^1"
+utoipa = { git = "https://github.com/SamuelMarks/utoipa", branch = "bigdecimal", version = "^5.4", features = ["actix_extras", "bigdecimal", "chrono"] }
+
+[dev-dependencies]
+actix-http = "^3.11"
