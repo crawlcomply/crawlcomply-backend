@@ -7,6 +7,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     container: rustlang/rust:nightly-slim
+    defaults:
+      run:
+        working-directory: ./crawlcomply-backend
 
     services:
       postgres:
@@ -30,6 +33,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+        with:
+          repository: 'SamuelMarks/rust-actix-diesel-auth-scaffold'
+          path: 'rust-actix-diesel-auth-scaffold'
+      - uses: actions/checkout@v5
+        with:
+          path: 'crawlcomply-backend'
       - name: Acquire dependencies
         run: |
           apt-get update -qq

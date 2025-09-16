@@ -1,6 +1,6 @@
 crawlcomply-backend
 ===================
-[![License](https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Test Suite](https://github.com/crawlcomply/crawlcomply-backend/actions/workflows/test.yml/badge.svg)](https://github.com/crawlcomply/crawlcomply-backend/actions/workflows/test.yml) [![License](https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Backend implementation handling models and routes for `Model`s, `Profile`s, and more.
 
