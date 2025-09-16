@@ -1,13 +1,18 @@
 use actix_web::{delete, get, post};
-use diesel::{BoolExpressionMethods, DecoratableTarget, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl, SelectableHelper};
+
+use diesel::query_dsl::methods::FilterDsl;
+use diesel::{
+    BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl,
+    SelectableHelper,
+};
 
 use rust_actix_diesel_auth_scaffold::errors::AuthError;
 use rust_actix_diesel_auth_scaffold::routes::token::helpers::parse_bearer_token;
 use rust_actix_diesel_auth_scaffold::DbPool;
 
 use crate::models::org::{CreateOrg, Org, UpdateOrg};
+use crate::schema::org as org_tbl;
 use crate::schema::org::dsl::org;
-use crate::schema::org::{name as org_name, owner as org_owner};
 
 const ORG: &'static str = "org";
 
@@ -52,43 +57,29 @@ pub async fn upsert(
 ) -> Result<actix_web::web::Json<Org>, AuthError> {
     let mut conn = pool.get()?;
     let token_username = parse_bearer_token(credentials.token())?.username;
-    let new_org_vals = form.into_inner();
+    let new_org_vals: CreateOrg = form.into_inner();
 
-    let raw_sql = r#"
-    INSERT INTO org (name, owner, description, github_id, avatar_url)
-    VALUES ($1, $2, $3, $4, $5)
-    ON CONFLICT (name) DO UPDATE SET
-        description = EXCLUDED.description,
-        github_id = EXCLUDED.github_id,
-        avatar_url = EXCLUDED.avatar_url
-    WHERE org.owner = $6
-    RETURNING *;
-"#;
-
-    let upsert_result: Result<Org, diesel::result::Error> = diesel::sql_query(raw_sql)
-        .bind::<diesel::sql_types::Text, _>(&new_org_vals.name)
-        .bind::<diesel::sql_types::Text, _>(&new_org_vals.owner)
-        .bind::<diesel::sql_types::Nullable<diesel::sql_types::Text>, _>(&new_org_vals.description)
-        .bind::<diesel::sql_types::Nullable<diesel::sql_types::Text>, _>(&new_org_vals.github_id)
-        .bind::<diesel::sql_types::Nullable<diesel::sql_types::Text>, _>(&new_org_vals.avatar_url)
-        .bind::<diesel::sql_types::Text, _>(&token_username) // This is the owner check
-        .get_result(&mut conn);
-
-    /* let org_upserted = diesel::insert_into(org)
+    let org_upserted: Option<Org> = diesel::insert_into(org_tbl::table)
         .values(&new_org_vals)
-        .on_conflict(org_name)
-        .filter_target(org_owner.eq(&token_username))
+        .on_conflict(org_tbl::name)
         .do_update()
-        .set(UpdateOrg{
+        .set(UpdateOrg {
             description: Some(new_org_vals.description.clone()),
             github_id: Some(new_org_vals.github_id.clone()),
             avatar_url: Some(new_org_vals.avatar_url.clone()),
             owner: None,
             created_at: None,
         })
+        .filter(org_tbl::owner.eq(&token_username))
         .returning(Org::as_returning())
-        .get_result(&mut conn)?; */
-    Ok(actix_web::web::Json(upsert_result?))
+        .get_result(&mut conn)
+        .optional()?;
+    match org_upserted {
+        Some(o) => Ok(actix_web::web::Json(o)),
+        None => Err(AuthError::Unauthorised(
+            "Owner of org does not match owner of requestor",
+        )),
+    }
 }
 
 /// Get Org by name
@@ -132,13 +123,12 @@ pub async fn remove(
 ) -> actix_web::Result<impl actix_web::Responder, AuthError> {
     let mut conn = pool.get()?;
     let token_username = parse_bearer_token(credentials.token())?.username;
-    diesel::delete(
-        crate::schema::org::table.filter(
-            org_owner
-                .eq(token_username)
-                .and(org_name.eq(name.into_inner())),
-        ),
-    )
+    diesel::delete(QueryDsl::filter(
+        org_tbl::table,
+        org_tbl::owner
+            .eq(token_username)
+            .and(org_tbl::name.eq(name.into_inner())),
+    ))
     .execute(&mut conn)?;
     Ok(actix_web::HttpResponse::new(
         actix_web::http::StatusCode::NO_CONTENT,

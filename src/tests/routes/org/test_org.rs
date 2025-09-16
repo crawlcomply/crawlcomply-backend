@@ -96,7 +96,7 @@ async fn test_update_org_you_do_not_own() {
         },
     );
     let resp = actix_web::test::call_service(&app, req).await;
-    assert_eq!(resp.status(), actix_web::http::StatusCode::NOT_FOUND);
+    assert_eq!(resp.status(), actix_web::http::StatusCode::UNAUTHORIZED);
 
     /* cleanup org */
     actix_web::test::call_service(&app, test_org_api::remove(&token, &create_org.name)).await;

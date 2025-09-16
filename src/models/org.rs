@@ -52,13 +52,7 @@ impl Default for Org {
 
 /// Create Struct for a row in table `org` for [`Org`]
 #[derive(
-    utoipa::ToSchema,
-    Debug,
-    Clone,
-    serde::Serialize,
-    serde::Deserialize,
-    diesel::Insertable,
-    diesel::AsChangeset,
+    utoipa::ToSchema, Debug, Clone, serde::Serialize, serde::Deserialize, diesel::Insertable,
 )]
 #[diesel(table_name=org)]
 pub struct CreateOrg {
@@ -96,7 +90,7 @@ impl Default for CreateOrg {
     diesel::AsChangeset,
     PartialEq,
 )]
-#[diesel(table_name = org, treat_none_as_null = false)]
+#[diesel(table_name=org)]
 pub struct UpdateOrg {
     /// Field representing column `description`
     pub description: Option<Option<String>>,
