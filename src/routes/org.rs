@@ -35,9 +35,9 @@ pub async fn read_many(
 ) -> Result<actix_web::web::Json<OrgVecObj>, AuthError> {
     let mut conn = pool.get()?;
 
-    let orgs_vec: Vec<Org> = org.select(Org::as_select()).load(&mut conn)?;
+    let org_vec: Vec<Org> = org.select(Org::as_select()).load(&mut conn)?;
 
-    Ok(actix_web::web::Json(OrgVecObj { orgs: orgs_vec }))
+    Ok(actix_web::web::Json(OrgVecObj { orgs: org_vec }))
 }
 
 /// Upsert Org
@@ -123,13 +123,14 @@ pub async fn remove(
 ) -> actix_web::Result<impl actix_web::Responder, AuthError> {
     let mut conn = pool.get()?;
     let token_username = parse_bearer_token(credentials.token())?.username;
-    diesel::delete(QueryDsl::filter(
+    let _rows_deleted = diesel::delete(QueryDsl::filter(
         org_tbl::table,
         org_tbl::owner
             .eq(token_username)
             .and(org_tbl::name.eq(name.into_inner())),
     ))
-    .execute(&mut conn)?;
+    .execute(&mut conn)
+    .unwrap_or_else(|_| 0usize);
     Ok(actix_web::HttpResponse::new(
         actix_web::http::StatusCode::NO_CONTENT,
     ))

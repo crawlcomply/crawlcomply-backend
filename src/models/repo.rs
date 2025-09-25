@@ -52,7 +52,7 @@ pub struct Repo {
     /// Field representing column `visibility`
     pub visibility: Option<String>,
     /// Field representing column `org`
-    pub org: Option<String>,
+    pub org: String,
     /// Field representing column `is_monorepo`
     pub is_monorepo: Option<bool>,
     /// Field representing column `last_commit`
@@ -80,7 +80,7 @@ impl Default for Repo {
             languages: None,
             spdx: None,
             visibility: None,
-            org: None,
+            org: String::new(),
             is_monorepo: None,
             last_commit: None,
             created_at: Default::default(),
@@ -91,7 +91,13 @@ impl Default for Repo {
 
 /// Create Struct for a row in table `repo` for [`Repo`]
 #[derive(
-    utoipa::ToSchema, Debug, Clone, serde::Serialize, serde::Deserialize, diesel::Insertable,
+    utoipa::ToSchema,
+    Debug,
+    Clone,
+    serde::Serialize,
+    serde::Deserialize,
+    diesel::Insertable,
+    diesel::AsChangeset,
 )]
 #[diesel(table_name=repo)]
 pub struct CreateRepo {
@@ -124,7 +130,7 @@ pub struct CreateRepo {
     /// Field representing column `visibility`
     pub visibility: Option<String>,
     /// Field representing column `org`
-    pub org: Option<String>,
+    pub org: String,
     /// Field representing column `is_monorepo`
     pub is_monorepo: Option<bool>,
     /// Field representing column `last_commit`
@@ -148,7 +154,7 @@ impl Default for CreateRepo {
             languages: None,
             spdx: None,
             visibility: None,
-            org: None,
+            org: String::new(),
             is_monorepo: None,
             last_commit: None,
         }
@@ -194,7 +200,7 @@ pub struct UpdateRepo {
     /// Field representing column `visibility`
     pub visibility: Option<Option<String>>,
     /// Field representing column `org`
-    pub org: Option<Option<String>>,
+    pub org: Option<String>,
     /// Field representing column `is_monorepo`
     pub is_monorepo: Option<Option<bool>>,
     /// Field representing column `last_commit`

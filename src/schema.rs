@@ -37,7 +37,7 @@ diesel::table! {
 }
 
 diesel::table! {
-    profiles (alias) {
+    profile (alias) {
         #[max_length = 50]
         alias -> Varchar,
         #[max_length = 50]
@@ -76,7 +76,7 @@ diesel::table! {
         #[max_length = 8]
         visibility -> Nullable<Varchar>,
         #[max_length = 50]
-        org -> Nullable<Varchar>,
+        org -> Varchar,
         is_monorepo -> Nullable<Bool>,
         #[max_length = 40]
         last_commit -> Nullable<Bpchar>,
@@ -131,14 +131,14 @@ diesel::table! {
 diesel::joinable!(org -> users (owner));
 diesel::joinable!(org_username -> org (group_name));
 diesel::joinable!(org_username -> users (username));
-diesel::joinable!(profiles -> users (username));
+diesel::joinable!(profile -> users (username));
 diesel::joinable!(repo -> org (org));
 
 diesel::allow_tables_to_appear_in_same_query!(
     clients,
     org,
     org_username,
-    profiles,
+    profile,
     repo,
     repo_history,
     run_history,

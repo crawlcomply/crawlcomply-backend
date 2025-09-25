@@ -7,4 +7,7 @@ mod profile;
 #[cfg(test)]
 mod org;
 
+#[cfg(test)]
+mod repo;
+
 mod helpers;

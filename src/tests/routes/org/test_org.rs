@@ -60,11 +60,14 @@ async fn test_upsert_read_delete() {
     assert_eq!(resp.status(), actix_web::http::StatusCode::NOT_FOUND);
     assert_eq!(
         serde_json::from_str::<serde_json::Value>(
-            "{\"error\":\"AuthError\",\"error_message\":\"`diesel::result::Error` error. NotFound\"}"
-        ).unwrap(),
-        serde_json::from_slice::<serde_json::Value>(
-            &resp.into_body().try_into_bytes().unwrap()
-        ).unwrap()
+            r#"{
+            "error":"AuthError",
+            "error_message":"`diesel::result::Error` error. NotFound"
+        }"#
+        )
+        .unwrap(),
+        serde_json::from_slice::<serde_json::Value>(&resp.into_body().try_into_bytes().unwrap())
+            .unwrap()
     );
 }
 
@@ -114,10 +117,13 @@ async fn test_update_org_you_do_not_own() {
     assert_eq!(resp.status(), actix_web::http::StatusCode::NOT_FOUND);
     assert_eq!(
         serde_json::from_str::<serde_json::Value>(
-            "{\"error\":\"AuthError\",\"error_message\":\"`diesel::result::Error` error. NotFound\"}"
-        ).unwrap(),
-        serde_json::from_slice::<serde_json::Value>(
-            &resp.into_body().try_into_bytes().unwrap()
-        ).unwrap()
+            r#"{
+            "error":"AuthError",
+            "error_message":"`diesel::result::Error` error. NotFound"
+        }"#
+        )
+        .unwrap(),
+        serde_json::from_slice::<serde_json::Value>(&resp.into_body().try_into_bytes().unwrap())
+            .unwrap()
     );
 }

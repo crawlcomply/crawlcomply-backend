@@ -1,12 +1,3 @@
-CREATE OR REPLACE FUNCTION trigger_set_timestamp()
-    RETURNS TRIGGER AS
-$$
-BEGIN
-    NEW.updated_at = current_timestamp;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
 -- inspired by https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#get-a-repository
 CREATE TABLE repo
 (
@@ -24,15 +15,15 @@ CREATE TABLE repo
     languages      TEXT[],
     spdx           TEXT,
     visibility     VARCHAR(8) CHECK (visibility in ('public', 'private')),
-    org            VARCHAR(50) REFERENCES org ("name"),
-    is_monorepo    BOOLEAN,                                      -- whether repo contains more than one "package"
+    org            VARCHAR(50)         NOT NULL REFERENCES org ("name"),
+    is_monorepo    BOOLEAN,                                                -- whether repo contains more than one "package"
     last_commit    CHAR(40),
-    created_at     TIMESTAMP NOT NULL DEFAULT current_timestamp, -- when this record was first created
-    updated_at     TIMESTAMP NOT NULL DEFAULT current_timestamp  -- when this record was laast created
+    created_at     TIMESTAMP           NOT NULL DEFAULT current_timestamp, -- when this record was first created
+    updated_at     TIMESTAMP           NOT NULL DEFAULT current_timestamp  -- when this record was last updated
 );
 
 CREATE TRIGGER set_timestamp
     BEFORE UPDATE
     ON repo
     FOR EACH ROW
-EXECUTE PROCEDURE trigger_set_timestamp();
+EXECUTE PROCEDURE diesel_set_updated_at();

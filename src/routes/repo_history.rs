@@ -9,7 +9,7 @@ use rust_actix_diesel_auth_scaffold::DbPool;
 use crate::models::repo_history::{CreateRepoHistory, RepoHistory};
 use crate::schema::repo_history::dsl::repo_history as repo_history_table;
 
-const REPO_HISTORY: &str = "repo_history";
+const REPO_HISTORY: &'static str = "repo_history";
 
 #[derive(serde::Deserialize, serde::Serialize)]
 struct RepoVecObj {

@@ -9,7 +9,7 @@ use rust_actix_diesel_auth_scaffold::DbPool;
 use crate::models::run_history::{CreateRunHistory, RunHistory};
 use crate::schema::run_history::dsl::run_history as run_history_table;
 
-const RUN_HISTORY: &str = "run_history";
+const RUN_HISTORY: &'static str = "run_history";
 
 #[derive(serde::Deserialize, serde::Serialize)]
 struct RepoVecObj {

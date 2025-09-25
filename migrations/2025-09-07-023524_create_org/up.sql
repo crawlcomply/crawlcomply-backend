@@ -10,13 +10,13 @@ CREATE TABLE org
 
 CREATE TABLE org_username
 (
-    group_name VARCHAR(50) REFERENCES org ("name"),
+    group_name VARCHAR(50) REFERENCES org ("name") ON DELETE CASCADE,
     username   VARCHAR(50) NOT NULL REFERENCES users (username), -- (basically) immutable username
     role       VARCHAR(15),
     PRIMARY KEY (group_name, username)
 );
 
-CREATE INDEX org_profile_name_idx
+CREATE INDEX IF NOT EXISTS org_profile_name_idx
     ON org_username USING HASH (group_name);
-CREATE INDEX org_profile_username_idx
+CREATE INDEX IF NOT EXISTS org_profile_username_idx
     ON org_username USING HASH (username);

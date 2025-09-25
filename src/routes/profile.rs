@@ -1,38 +1,40 @@
 use actix_web::{delete, get, post};
 
+use diesel::query_dsl::methods::FilterDsl;
+use diesel::OptionalExtension;
 use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper};
 
 use rust_actix_diesel_auth_scaffold::errors::AuthError;
 use rust_actix_diesel_auth_scaffold::routes::token::helpers::parse_bearer_token;
 use rust_actix_diesel_auth_scaffold::DbPool;
 
-use crate::models::profiles::{CreateProfiles, Profiles};
-use crate::schema::profiles::dsl::profiles;
-use crate::schema::profiles::dsl::username as profile_username;
+use crate::models::profile::{CreateProfile, Profile, UpdateProfile};
+use crate::schema::profile as profile_tbl;
+use crate::schema::profile::dsl::profile;
 
 const PROFILE: &'static str = "profile";
 
 #[derive(serde::Deserialize, serde::Serialize)]
-struct ProfilesVecObj {
-    profiles: Vec<Profiles>,
+struct ProfileVecObj {
+    profiles: Vec<Profile>,
 }
 
-/// Get Profiles
+/// Get Profile
 #[utoipa::path(
     tag = PROFILE,
     responses(
-        (status = 200, description = "Profiles found in database"),
+        (status = 200, description = "Profile found in database"),
         (status = 404, description = "Not found")
     )
 )]
 #[get("/profiles")]
 pub async fn read_many(
     pool: actix_web::web::Data<DbPool>,
-) -> Result<actix_web::web::Json<ProfilesVecObj>, AuthError> {
+) -> Result<actix_web::web::Json<ProfileVecObj>, AuthError> {
     let mut conn = pool.get()?;
-    let profiles_vec: Vec<Profiles> = profiles.select(Profiles::as_select()).load(&mut conn)?;
-    Ok(actix_web::web::Json(ProfilesVecObj {
-        profiles: profiles_vec,
+    let profile_vec: Vec<Profile> = profile.select(Profile::as_select()).load(&mut conn)?;
+    Ok(actix_web::web::Json(ProfileVecObj {
+        profiles: profile_vec,
     }))
 }
 
@@ -49,23 +51,51 @@ pub async fn read_many(
 #[post("/profile")]
 pub async fn upsert(
     pool: actix_web::web::Data<DbPool>,
-    form: actix_web::web::Json<CreateProfiles>,
+    form: actix_web::web::Json<CreateProfile>,
     credentials: actix_web_httpauth::extractors::bearer::BearerAuth,
-) -> Result<actix_web::web::Json<Profiles>, AuthError> {
+) -> Result<actix_web::web::Json<Profile>, AuthError> {
     let mut conn = pool.get()?;
 
     let token_username = parse_bearer_token(credentials.token())?.username;
     let new_profile = form.into_inner();
     if new_profile.username != token_username {
         return Err(AuthError::Unauthorised(
-            "Trying to upsert profile of someone else",
+            "username of profile does not match username of requestor",
         ));
     }
-    let profile = diesel::insert_into(profiles)
+    let profile_upserted: Option<Profile> = diesel::insert_into(profile)
         .values(&new_profile)
-        .returning(Profiles::as_returning())
-        .get_result(&mut conn)?;
-    Ok(actix_web::web::Json(profile))
+        .on_conflict(profile_tbl::username)
+        .do_update()
+        .set(UpdateProfile {
+            username: Some(new_profile.username.clone()),
+            description: if new_profile.description.is_some() {
+                Some(new_profile.description.clone())
+            } else {
+                None
+            },
+            github_id: if new_profile.github_id.is_some() {
+                Some(new_profile.github_id.clone())
+            } else {
+                None
+            },
+            avatar_url: if new_profile.avatar_url.is_some() {
+                Some(new_profile.avatar_url.clone())
+            } else {
+                None
+            },
+            created_at: None,
+        })
+        .filter(profile_tbl::username.eq(&token_username))
+        .returning(Profile::as_returning())
+        .get_result(&mut conn)
+        .optional()?;
+    match profile_upserted {
+        Some(o) => Ok(actix_web::web::Json(o)),
+        None => Err(AuthError::Unauthorised(
+            "username of profile does not match username of requestor",
+        )),
+    }
 }
 
 /// Get Profile
@@ -80,14 +110,16 @@ pub async fn upsert(
 pub async fn read(
     pool: actix_web::web::Data<DbPool>,
     credentials: actix_web_httpauth::extractors::bearer::BearerAuth,
-) -> Result<actix_web::web::Json<Profiles>, AuthError> {
+) -> Result<actix_web::web::Json<Profile>, AuthError> {
     let mut conn = pool.get()?;
     let token_username = parse_bearer_token(credentials.token())?.username;
     Ok(actix_web::web::Json(
-        crate::schema::profiles::table
-            .filter(profile_username.eq(token_username))
-            .select(Profiles::as_select())
-            .first(&mut conn)?,
+        diesel::QueryDsl::filter(
+            crate::schema::profile::table,
+            profile_tbl::username.eq(token_username),
+        )
+        .select(Profile::as_select())
+        .first(&mut conn)?,
     ))
 }
 
@@ -106,8 +138,11 @@ pub async fn remove(
 ) -> actix_web::Result<impl actix_web::Responder, AuthError> {
     let mut conn = pool.get()?;
     let token_username = parse_bearer_token(credentials.token())?.username;
-    diesel::delete(crate::schema::profiles::table.filter(profile_username.eq(token_username)))
-        .execute(&mut conn)?;
+    diesel::delete(diesel::QueryDsl::filter(
+        crate::schema::profile::table,
+        profile_tbl::username.eq(token_username),
+    ))
+    .execute(&mut conn)?;
     Ok(actix_web::HttpResponse::new(
         actix_web::http::StatusCode::NO_CONTENT,
     ))
