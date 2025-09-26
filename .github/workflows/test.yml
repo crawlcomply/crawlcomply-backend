@@ -50,6 +50,10 @@ jobs:
           cargo binstall diesel_cli
           diesel migration run --migration-dir ../rust-actix-diesel-auth-scaffold/migrations
           diesel migration run
+        env:
+          DATABASE_URL: postgres://rest_api_user:rest_api_pass@postgres/rest_api_db
+          REDIS_URL: redis://valkey:6379
+          RUST_BACKTRACE: full
       - run: cargo build
         name: cargo build
       - run: cargo test
