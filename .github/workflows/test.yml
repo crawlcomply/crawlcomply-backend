@@ -44,6 +44,10 @@ jobs:
           apt-get update -qq
           apt install -y libcom-err2 libffi8 libgmp10 libgnutls30 libgssapi-krb5-2 libhogweed6 libidn2-dev libk5crypto3
           apt install -y libkeyutils1 libkrb5-3 libnettle8 libp11-kit0 libpq-dev libsasl2-2 libtasn1-6
+      - name: run migrations
+        run: |
+          diesel migration run --migration-dir ../rust-actix-diesel-auth-scaffold/migrations
+          diesel migration run
       - run: cargo build
         name: cargo build
       - run: cargo test
