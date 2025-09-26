@@ -186,11 +186,7 @@ async fn test_update_repo_you_do_not_own() {
     let req = test_repo_api::get(ORG, &repo_name);
     let resp = actix_web::test::call_service(&app, req).await;
     assert_eq!(resp.status(), actix_web::http::StatusCode::NOT_FOUND);
-    println!(
-        "{}",
-        std::str::from_utf8(resp.into_body().try_into_bytes().unwrap().as_ref()).unwrap()
-    );
-    /*assert_eq!(
+    assert_eq!(
         serde_json::from_str::<serde_json::Value>(
             r#"{
             "error":"AuthError",
@@ -200,7 +196,7 @@ async fn test_update_repo_you_do_not_own() {
         .unwrap(),
         serde_json::from_slice::<serde_json::Value>(&resp.into_body().try_into_bytes().unwrap())
             .unwrap()
-    );*/
+    );
 }
 
 #[actix_web::test]

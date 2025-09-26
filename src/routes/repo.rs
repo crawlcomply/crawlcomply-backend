@@ -87,11 +87,6 @@ pub async fn upsert(
         val
     };
 
-    println!(
-        "new_repo_vals.org: {}, token_username: {}",
-        &new_repo_vals.org, &token_username
-    );
-
     let repo_upserted: Repo = conn
         .transaction(|trans_con| {
             org_tbl::table

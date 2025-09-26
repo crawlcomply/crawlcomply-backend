@@ -72,11 +72,9 @@ pub(crate) mod test_repo_api {
             type_name_of_val(&crate::routes::repo::read),
             "crawlcomply_backend::routes::repo::read"
         );
-        let r = actix_web::test::TestRequest::get()
+        actix_web::test::TestRequest::get()
             .uri(&format!("/api/v0_public/org/{org}/repo/{repo}"))
-            .to_request();
-        println!("{:#?}", r);
-        r
+            .to_request()
     }
 
     pub(crate) fn remove(token: &str, org: &str, repo: &str) -> actix_http::Request {
