@@ -130,5 +130,11 @@ async fn test_update_org_you_do_not_own() {
 #[actix_web::test]
 async fn test_get_many_org() {
     let resp = actix_web::test::call_service(&get_org_app!().await, test_org_api::get_many()).await;
-    assert_eq!(resp.status(), actix_web::http::StatusCode::OK);
+    let status = resp.status();
+    println!(
+        "body from test_get_many_org: {}",
+        serde_json::from_slice::<serde_json::Value>(&resp.into_body().try_into_bytes().unwrap())
+            .unwrap()
+    );
+    assert_eq!(status, actix_web::http::StatusCode::OK);
 }
