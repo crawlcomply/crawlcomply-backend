@@ -206,7 +206,7 @@ async fn test_update_repo_you_do_not_own() {
 #[actix_web::test]
 async fn test_get_many_repo() {
     const ORG: &'static str = crate::tests::routes::repo::helpers::ORGS[3];
-    const USERNAME: &'static str = USERNAMES[1];
+    const USERNAME: &'static str = USERNAMES[3];
     let app_org = get_org_app!().await;
     let token = crate::tests::routes::helpers::retrieve_token(USERNAME, PASSWORD).await;
 
