@@ -57,9 +57,9 @@ diesel::table! {
         #[max_length = 255]
         node_id -> Nullable<Varchar>,
         #[max_length = 39]
-        name -> Nullable<Varchar>,
+        name -> Varchar,
         #[max_length = 255]
-        full_name -> Varchar,
+        full_name -> Nullable<Varchar>,
         private -> Nullable<Bool>,
         #[max_length = 2048]
         html_url -> Nullable<Varchar>,

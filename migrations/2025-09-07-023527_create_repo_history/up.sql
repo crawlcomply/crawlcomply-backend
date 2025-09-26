@@ -1,6 +1,6 @@
 CREATE TABLE repo_history
 (
-    "commit"         CHAR(40)     NOT NULL,
+    "commit"         CHAR(40)     NOT NULL CHECK ("commit" ~ '^[A-Za-z0-9]+$'),
     repo_id          INTEGER REFERENCES repo (id),
     full_name        VARCHAR(255) NOT NULL REFERENCES repo (full_name),
     doc_coverage     NUMERIC(4, 2),

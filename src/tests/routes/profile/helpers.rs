@@ -19,13 +19,23 @@ macro_rules! get_profile_app {
                         .service(crate::routes::profile::upsert)
                         .service(crate::routes::profile::read)
                         .service(crate::routes::profile::remove),
+                )
+                .service(
+                    actix_web::web::scope("/api/v0_public")
+                        .service(crate::routes::profile::read_many),
                 ),
         )
     };
 }
 
 pub(crate) mod test_profile_api {
+    use crate::tests::routes::helpers::type_name_of_val;
+
     pub(crate) fn post(token: &str, alias: &str, username: &'static str) -> actix_http::Request {
+        assert_eq!(
+            type_name_of_val(&crate::routes::profile::upsert),
+            "crawlcomply_backend::routes::profile::upsert"
+        );
         actix_web::test::TestRequest::post()
             .uri("/api/v0/profile")
             .append_header(("Authorization", format!("Bearer {}", token)))
@@ -37,7 +47,21 @@ pub(crate) mod test_profile_api {
             .to_request()
     }
 
+    pub(crate) fn get_many() -> actix_http::Request {
+        assert_eq!(
+            type_name_of_val(&crate::routes::profile::read_many),
+            "crawlcomply_backend::routes::profile::read_many"
+        );
+        actix_web::test::TestRequest::get()
+            .uri("/api/v0_public/profiles")
+            .to_request()
+    }
+
     pub(crate) fn get(token: &str) -> actix_http::Request {
+        assert_eq!(
+            type_name_of_val(&crate::routes::profile::read),
+            "crawlcomply_backend::routes::profile::read"
+        );
         actix_web::test::TestRequest::get()
             .uri("/api/v0/profile")
             .append_header(("Authorization", format!("Bearer {}", token)))
@@ -45,6 +69,10 @@ pub(crate) mod test_profile_api {
     }
 
     pub(crate) fn remove(token: &str) -> actix_http::Request {
+        assert_eq!(
+            type_name_of_val(&crate::routes::profile::remove),
+            "crawlcomply_backend::routes::profile::remove"
+        );
         actix_web::test::TestRequest::delete()
             .uri("/api/v0/profile")
             .append_header(("Authorization", format!("Bearer {}", token)))

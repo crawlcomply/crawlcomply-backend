@@ -27,7 +27,7 @@ struct OrgVecObj {
     responses(
         (status = 200, description = "Org found in database"),
         (status = 404, description = "Not found")
-    ),
+    )
 )]
 #[get("/org")]
 pub async fn read_many(
@@ -58,6 +58,12 @@ pub async fn upsert(
     let mut conn = pool.get()?;
     let token_username = parse_bearer_token(credentials.token())?.username;
     let new_org_vals: CreateOrg = form.into_inner();
+    if new_org_vals.owner != token_username {
+        // ADMIN: can skip this check
+        return Err(AuthError::Unauthorised(
+            "Trying to make someone else owner of org",
+        ));
+    }
 
     let org_upserted: Option<Org> = diesel::insert_into(org_tbl::table)
         .values(&new_org_vals)
@@ -113,7 +119,8 @@ pub async fn read(
     ),
     params(
         ("name", description = "Org name"),
-    )
+    ),
+    security(("password"=[]))
 )]
 #[delete("/org/{name}")]
 pub async fn remove(

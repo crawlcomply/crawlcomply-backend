@@ -27,8 +27,7 @@ async fn test_upsert_read_delete() {
 
     /* GET */
     let read_org: Org =
-        actix_web::test::call_and_read_body_json(&app, test_org_api::get(&token, &create_org.name))
-            .await;
+        actix_web::test::call_and_read_body_json(&app, test_org_api::get(&create_org.name)).await;
 
     /* cmp */
     assert_eq!(
@@ -55,7 +54,7 @@ async fn test_upsert_read_delete() {
     );
 
     /* confirm org no longer exists */
-    let req = test_org_api::get(&token, &create_org.name);
+    let req = test_org_api::get(&create_org.name);
     let resp = actix_web::test::call_service(&app, req).await;
     assert_eq!(resp.status(), actix_web::http::StatusCode::NOT_FOUND);
     assert_eq!(
@@ -112,7 +111,7 @@ async fn test_update_org_you_do_not_own() {
     );
 
     /* confirm org no longer exists */
-    let req = test_org_api::get(&token, &create_org.name);
+    let req = test_org_api::get(&create_org.name);
     let resp = actix_web::test::call_service(&app, req).await;
     assert_eq!(resp.status(), actix_web::http::StatusCode::NOT_FOUND);
     assert_eq!(
@@ -126,4 +125,10 @@ async fn test_update_org_you_do_not_own() {
         serde_json::from_slice::<serde_json::Value>(&resp.into_body().try_into_bytes().unwrap())
             .unwrap()
     );
+}
+
+#[actix_web::test]
+async fn test_get_many_org() {
+    let resp = actix_web::test::call_service(&get_org_app!().await, test_org_api::get_many()).await;
+    assert_eq!(resp.status(), actix_web::http::StatusCode::OK);
 }

@@ -62,3 +62,11 @@ async fn test_upsert_read_delete() {
             .unwrap()
     );
 }
+
+#[actix_web::test]
+async fn test_get_many_profile() {
+    let resp =
+        actix_web::test::call_service(&get_profile_app!().await, test_profile_api::get_many())
+            .await;
+    assert_eq!(resp.status(), actix_web::http::StatusCode::OK);
+}

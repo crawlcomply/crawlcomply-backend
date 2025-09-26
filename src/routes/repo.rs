@@ -1,4 +1,4 @@
-use actix_web::{delete, get, post, web};
+use actix_web::{delete, get, post};
 
 use diesel::dsl::exists;
 use diesel::sql_types::Integer;
@@ -22,6 +22,12 @@ struct RepoVecObj {
     repos: Vec<Repo>,
 }
 
+#[derive(Debug, serde::Deserialize)]
+pub struct OrgRepoPath {
+    pub org: String,
+    pub name: String,
+}
+
 /// Get Repo
 #[utoipa::path(
     tag = REPO,
@@ -29,14 +35,23 @@ struct RepoVecObj {
         (status = 200, description = "Repo found in database"),
         (status = 404, description = "Not found")
     ),
+    params(
+        ("org", description = "Org name")
+    )
 )]
-#[get("/repo")]
-pub async fn read_many(pool: web::Data<DbPool>) -> Result<web::Json<RepoVecObj>, AuthError> {
+#[get("/org/{org}/repo")]
+pub async fn read_many(
+    pool: actix_web::web::Data<DbPool>,
+    org: actix_web::web::Path<String>,
+) -> Result<actix_web::web::Json<RepoVecObj>, AuthError> {
     let mut conn = pool.get()?;
 
-    let repo_vec: Vec<Repo> = repo.select(Repo::as_select()).load(&mut conn)?;
+    let repo_vec: Vec<Repo> = repo
+        .filter(repo_tbl::org.eq(org.into_inner()))
+        .select(Repo::as_select())
+        .load(&mut conn)?;
 
-    Ok(web::Json(RepoVecObj { repos: repo_vec }))
+    Ok(actix_web::web::Json(RepoVecObj { repos: repo_vec }))
 }
 
 /// Upsert Repo
@@ -46,27 +61,36 @@ pub async fn read_many(pool: web::Data<DbPool>) -> Result<web::Json<RepoVecObj>,
         (status = 200, description = "Repo created"),
         (status = 500, description = "Internal Server Error")
     ),
+    params(
+        ("org", description = "Org name")
+    ),
     security(("password"=[]))
 )]
-#[post("/repo")]
+#[post("/org/{org}/repo")]
 pub async fn upsert(
-    pool: web::Data<DbPool>,
-    form: web::Json<CreateRepo>,
+    pool: actix_web::web::Data<DbPool>,
+    org: actix_web::web::Path<String>,
+    form: actix_web::web::Json<CreateRepo>,
     credentials: actix_web_httpauth::extractors::bearer::BearerAuth,
-) -> Result<web::Json<Repo>, AuthError> {
+) -> Result<actix_web::web::Json<Repo>, AuthError> {
     let mut conn = pool.get()?;
 
     let token_username = parse_bearer_token(credentials.token())?.username;
 
+    let org_str = org.into_inner(); // ADMIN: make this `val.org` for admin
     let new_repo_vals: CreateRepo = {
         let mut val = form.into_inner();
-        let name = val.name.unwrap();
-        if val.full_name.is_empty() {
-            val.full_name = format!("{}/{}", val.org, name);
+        if val.full_name.is_some() {
+            val.full_name = Some(format!("{}/{}", &org_str, &val.name));
         }
-        val.name = Some(name);
+        val.org = org_str;
         val
     };
+
+    println!(
+        "new_repo_vals.org: {}, token_username: {}",
+        &new_repo_vals.org, &token_username
+    );
 
     let repo_upserted: Repo = conn
         .transaction(|trans_con| {
@@ -90,12 +114,8 @@ pub async fn upsert(
                     } else {
                         None
                     },
-                    name: if new_repo_vals.name.is_some() {
-                        Some(new_repo_vals.name.clone())
-                    } else {
-                        None
-                    },
-                    full_name: if new_repo_vals.full_name.is_empty() {
+                    name: Some(new_repo_vals.name.clone()),
+                    full_name: if new_repo_vals.full_name.is_some() {
                         Some(new_repo_vals.full_name.clone())
                     } else {
                         None
@@ -186,10 +206,10 @@ pub async fn upsert(
             }
         })?;
 
-    Ok(web::Json(repo_upserted))
+    Ok(actix_web::web::Json(repo_upserted))
 }
 
-/// Get Repo by id
+/// Get Repo by name
 #[utoipa::path(
     tag = REPO,
     responses(
@@ -197,23 +217,23 @@ pub async fn upsert(
         (status = 404, description = "Not found")
     ),
     params(
-        ("id", description = "Repo id"),
+        ("org", description = "Org name"),
+        ("name", description = "Repo name"),
     )
 )]
-#[get("/repo/{name}")]
+#[get("/org/{org}/repo/{name}")]
 pub async fn read(
-    pool: web::Data<DbPool>,
-    name: web::Path<String>,
-) -> Result<web::Json<Repo>, AuthError> {
+    pool: actix_web::web::Data<DbPool>,
+    path: actix_web::web::Path<OrgRepoPath>,
+) -> Result<actix_web::web::Json<Repo>, AuthError> {
+    let OrgRepoPath { org, name } = path.into_inner();
     let mut conn = pool.get()?;
 
     Ok(actix_web::web::Json(
-        diesel::QueryDsl::filter(
-            crate::schema::repo::table,
-            repo_tbl::name.eq(name.into_inner()),
-        )
-        .select(Repo::as_select())
-        .first(&mut conn)?,
+        repo_tbl::table
+            .filter(repo_tbl::org.eq(org).and(repo_tbl::name.eq(name)))
+            .select(Repo::as_select())
+            .first(&mut conn)?,
     ))
 }
 
@@ -225,27 +245,32 @@ pub async fn read(
         (status = 404, description = "Not found")
     ),
     params(
+        ("org", description = "Org name"),
         ("name", description = "Repo name"),
-    )
+    ),
+    security(("password"=[]))
 )]
-#[delete("/repo/{name}")]
+#[delete("/org/{org}/repo/{name}")]
 pub async fn remove(
     pool: actix_web::web::Data<DbPool>,
-    name: actix_web::web::Path<String>,
+    path: actix_web::web::Path<OrgRepoPath>,
     credentials: actix_web_httpauth::extractors::bearer::BearerAuth,
 ) -> actix_web::Result<impl actix_web::Responder, AuthError> {
+    let OrgRepoPath { org, name } = path.into_inner();
     let mut conn = pool.get()?;
     let token_username = parse_bearer_token(credentials.token())?.username;
-    let repo_name: String = name.into_inner();
     let _rows_deleted = diesel::delete(
         repo_tbl::table.filter(
-            repo_tbl::name.eq(repo_name).and(exists(
-                org_tbl::table.filter(
-                    org_tbl::name
-                        .eq(repo_tbl::org)
-                        .and(org_tbl::owner.eq(&token_username)),
-                ),
-            )),
+            repo_tbl::name
+                .eq(name)
+                .and(repo_tbl::org.eq(org))
+                .and(exists(
+                    org_tbl::table.filter(
+                        org_tbl::name
+                            .eq(repo_tbl::org)
+                            .and(org_tbl::owner.eq(&token_username)),
+                    ),
+                )),
         ),
     )
     .execute(&mut conn)

@@ -104,7 +104,8 @@ pub async fn upsert(
     responses(
         (status = 200, description = "Profile found from database"),
         (status = 404, description = "Not found")
-    )
+    ),
+    security(("password"=[]))
 )]
 #[get("/profile")]
 pub async fn read(
@@ -129,7 +130,8 @@ pub async fn read(
     responses(
         (status = 204, description = "Profile deleted"),
         (status = 404, description = "Not found")
-    )
+    ),
+    security(("password"=[]))
 )]
 #[delete("/profile")]
 pub async fn remove(

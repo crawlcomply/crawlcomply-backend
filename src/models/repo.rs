@@ -28,9 +28,9 @@ pub struct Repo {
     /// Field representing column `node_id`
     pub node_id: Option<String>,
     /// Field representing column `name`
-    pub name: Option<String>,
+    pub name: String,
     /// Field representing column `full_name`
-    pub full_name: String,
+    pub full_name: Option<String>,
     /// Field representing column `private`
     pub private: Option<bool>,
     /// Field representing column `html_url`
@@ -68,8 +68,8 @@ impl Default for Repo {
         Self {
             id: 0,
             node_id: None,
-            name: None,
-            full_name: String::new(),
+            name: String::new(),
+            full_name: None,
             private: None,
             html_url: None,
             description: None,
@@ -91,13 +91,7 @@ impl Default for Repo {
 
 /// Create Struct for a row in table `repo` for [`Repo`]
 #[derive(
-    utoipa::ToSchema,
-    Debug,
-    Clone,
-    serde::Serialize,
-    serde::Deserialize,
-    diesel::Insertable,
-    diesel::AsChangeset,
+    utoipa::ToSchema, Debug, Clone, serde::Serialize, serde::Deserialize, diesel::Insertable,
 )]
 #[diesel(table_name=repo)]
 pub struct CreateRepo {
@@ -106,9 +100,9 @@ pub struct CreateRepo {
     /// Field representing column `node_id`
     pub node_id: Option<String>,
     /// Field representing column `name`
-    pub name: Option<String>,
+    pub name: String,
     /// Field representing column `full_name`
-    pub full_name: String,
+    pub full_name: Option<String>,
     /// Field representing column `private`
     pub private: Option<bool>,
     /// Field representing column `html_url`
@@ -142,8 +136,8 @@ impl Default for CreateRepo {
         Self {
             id: 0,
             node_id: None,
-            name: None,
-            full_name: String::new(),
+            name: String::new(),
+            full_name: None,
             private: None,
             html_url: None,
             description: None,
@@ -176,9 +170,9 @@ pub struct UpdateRepo {
     /// Field representing column `node_id`
     pub node_id: Option<Option<String>>,
     /// Field representing column `name`
-    pub name: Option<Option<String>>,
+    pub name: Option<String>,
     /// Field representing column `full_name`
-    pub full_name: Option<String>,
+    pub full_name: Option<Option<String>>,
     /// Field representing column `private`
     pub private: Option<Option<bool>>,
     /// Field representing column `html_url`

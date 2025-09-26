@@ -1,6 +1,6 @@
 CREATE TABLE org
 (
-    "name"      VARCHAR(50) PRIMARY KEY,
+    "name"      VARCHAR(50) PRIMARY KEY CHECK ("name" ~ '^[A-Za-z0-9._~@-]+$'),
     description TEXT,
     github_id   VARCHAR(39),                                   -- github id (username's can be modified)
     avatar_url  VARCHAR(2048),                                 -- profile image URL
@@ -12,7 +12,7 @@ CREATE TABLE org_username
 (
     group_name VARCHAR(50) REFERENCES org ("name") ON DELETE CASCADE,
     username   VARCHAR(50) NOT NULL REFERENCES users (username), -- (basically) immutable username
-    role       VARCHAR(15),
+    role       VARCHAR(15) CHECK ("role" ~ '^[A-Za-z0-9._~@-]+$'),
     PRIMARY KEY (group_name, username)
 );
 

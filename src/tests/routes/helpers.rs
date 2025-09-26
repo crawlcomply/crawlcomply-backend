@@ -10,3 +10,7 @@ pub async fn retrieve_token(username: &str, password: &str) -> String {
             .await;
     token
 }
+
+pub(crate) fn type_name_of_val<T: ?Sized>(_val: &T) -> &'static str {
+    std::any::type_name::<T>()
+}

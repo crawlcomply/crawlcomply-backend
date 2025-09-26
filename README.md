@@ -2,10 +2,11 @@ crawlcomply-backend
 ===================
 [![Test Suite](https://github.com/crawlcomply/crawlcomply-backend/actions/workflows/test.yml/badge.svg)](https://github.com/crawlcomply/crawlcomply-backend/actions/workflows/test.yml) [![License](https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Backend implementation handling models and routes for `Model`s, `Profile`s, and more.
+Backend implementation handling models and routes for `Org`s, `Profile`s, `Repo`s, `RepoHistory`, `RunHistory`, and
+more.
 
-Server frontend can be found at parent repository: https://github.com/replica-ml/serve-replica (clone this one directory
-above for that to build)
+Server frontend can be found at parent repository: https://github.com/crawlcomply/crawlcomply-serve (clone above
+this directory for that to build).
 
 ## Development guide
 
@@ -19,7 +20,7 @@ Most of this guide is taken from https://diesel.rs/guides/getting-started @ [
 #### Dependencies
 
 ```sh
-$ cargo install --force cargo-binstall dsync
+$ cargo install --force cargo-binstall
 $ cargo binstall diesel_cli
 $ printf '%s\n' \
   DATABASE_URL='postgres://rest_user:rest_pass@localhost/rest_db' \
@@ -43,9 +44,6 @@ $ diesel migration generate create_profile
 #### Run migrations
 
 ```sh
-$ [ -d '../rust-actix-diesel-auth-scaffold' ] || \
-  git clone --depth=1 https://github.com/offscale/rust-actix-diesel-auth-scaffold ../rust-actix-diesel-auth-scaffold
-$ diesel migration run --migration-dir ../rust-actix-diesel-auth-scaffold/migrations
 $ diesel migration run
 ```
 
@@ -58,8 +56,12 @@ $ diesel migration redo
 #### Generate associated `struct`s (like the `class` ORMs of other languages)
 
 ```sh
-$ dsync -c 'diesel::pg::PgConnection' -d 'utoipa::ToSchema' -i 'src/schema.rs' -o 'src/models'
+$ cargo install --git https://github.com/SamuelMarks/dsync --branch default-and-derive
+$ dsync -c 'diesel::pg::PgConnection' -d 'utoipa::ToSchema' -i 'src/schema.rs' -o 'src/models' \
+        -g 'created_at' -g 'updated_at' --single-model-file --default-impl
 ```
+
+---
 
 ## Docker usage
 

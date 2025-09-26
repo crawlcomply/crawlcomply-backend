@@ -21,32 +21,71 @@ macro_rules! get_repo_app {
                             ),
                         ))
                         .service(crate::routes::repo::upsert)
-                        .service(crate::routes::repo::read)
                         .service(crate::routes::repo::remove),
+                )
+                .service(
+                    actix_web::web::scope("/api/v0_public")
+                        .service(crate::routes::repo::read)
+                        .service(crate::routes::repo::read_many),
                 ),
         )
     };
 }
 
 pub(crate) mod test_repo_api {
-    pub(crate) fn post(token: &str, repo: &crate::models::repo::CreateRepo) -> actix_http::Request {
+    use crate::tests::routes::helpers::type_name_of_val;
+
+    pub(crate) fn post(
+        token: &str,
+        org: &str,
+        repo: &crate::models::repo::CreateRepo,
+    ) -> actix_http::Request {
+        assert_eq!(
+            type_name_of_val(&crate::routes::repo::upsert),
+            "crawlcomply_backend::routes::repo::upsert"
+        );
         actix_web::test::TestRequest::post()
-            .uri("/api/v0/repo")
+            .uri(&format!("/api/v0/org/{org}/repo"))
             .append_header(("Authorization", format!("Bearer {}", token)))
             .set_json(repo)
             .to_request()
     }
 
-    pub(crate) fn get(token: &str, repo_name: &str) -> actix_http::Request {
+    /// `crate::routes::repo::read_many` test
+    pub(crate) fn get_many(org: &str) -> actix_http::Request {
+        assert_eq!(
+            type_name_of_val(&crate::routes::repo::read_many),
+            "crawlcomply_backend::routes::repo::read_many"
+        );
         actix_web::test::TestRequest::get()
-            .uri(format!("/api/v0/repo/{}", repo_name).as_str())
-            .append_header(("Authorization", format!("Bearer {}", token)))
+            .uri(&format!("/api/v0_public/org/{org}/repo"))
             .to_request()
     }
 
-    pub(crate) fn remove(token: &str, repo_name: &str) -> actix_http::Request {
+    /*
+    ```rs
+    crate::routes::repo::read
+    ```
+    */
+    pub(crate) fn get(org: &str, repo: &str) -> actix_http::Request {
+        assert_eq!(
+            type_name_of_val(&crate::routes::repo::read),
+            "crawlcomply_backend::routes::repo::read"
+        );
+        let r = actix_web::test::TestRequest::get()
+            .uri(&format!("/api/v0_public/org/{org}/repo/{repo}"))
+            .to_request();
+        println!("{:#?}", r);
+        r
+    }
+
+    pub(crate) fn remove(token: &str, org: &str, repo: &str) -> actix_http::Request {
+        assert_eq!(
+            type_name_of_val(&crate::routes::repo::remove),
+            "crawlcomply_backend::routes::repo::remove"
+        );
         actix_web::test::TestRequest::delete()
-            .uri(format!("/api/v0/repo/{}", repo_name).as_str())
+            .uri(&format!("/api/v0/org/{org}/repo/{repo}"))
             .append_header(("Authorization", format!("Bearer {}", token)))
             .to_request()
     }
