@@ -46,6 +46,8 @@ jobs:
           apt install -y libkeyutils1 libkrb5-3 libnettle8 libp11-kit0 libpq-dev libsasl2-2 libtasn1-6
       - name: run migrations
         run: |
+          cargo install --force cargo-binstall
+          cargo binstall diesel_cli
           diesel migration run --migration-dir ../rust-actix-diesel-auth-scaffold/migrations
           diesel migration run
       - run: cargo build
