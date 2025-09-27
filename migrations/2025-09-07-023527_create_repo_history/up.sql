@@ -8,6 +8,8 @@ CREATE TABLE repo_history
     hosted_docs_url  VARCHAR(2048),
     security_scanner TEXT,
     git_tag          VARCHAR(244),
+    git_branch       VARCHAR(244),
+    github_pr        INTEGER,
     metrics          JSONB,
     notes            TEXT,
     created_at       TIMESTAMP    NOT NULL DEFAULT current_timestamp, -- when this record was first created

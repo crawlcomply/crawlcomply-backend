@@ -31,6 +31,8 @@ pub struct RunHistory {
     pub created_at: chrono::NaiveDateTime,
     /// Field representing column `id`
     pub id: Option<String>,
+    /// Field representing column `status`
+    pub status: Option<String>,
 }
 
 impl Default for RunHistory {
@@ -41,6 +43,7 @@ impl Default for RunHistory {
             run: 0,
             created_at: Default::default(),
             id: None,
+            status: None,
         }
     }
 }
@@ -59,6 +62,8 @@ pub struct CreateRunHistory {
     pub run: i32,
     /// Field representing column `id`
     pub id: Option<String>,
+    /// Field representing column `status`
+    pub status: Option<String>,
 }
 
 impl Default for CreateRunHistory {
@@ -68,6 +73,7 @@ impl Default for CreateRunHistory {
             full_name: String::new(),
             run: 0,
             id: None,
+            status: None,
         }
     }
 }
@@ -88,6 +94,8 @@ pub struct UpdateRunHistory {
     pub created_at: Option<chrono::NaiveDateTime>,
     /// Field representing column `id`
     pub id: Option<Option<String>>,
+    /// Field representing column `status`
+    pub status: Option<Option<String>>,
 }
 
 impl Default for UpdateRunHistory {
@@ -95,6 +103,7 @@ impl Default for UpdateRunHistory {
         Self {
             created_at: None,
             id: None,
+            status: None,
         }
     }
 }

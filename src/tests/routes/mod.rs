@@ -10,4 +10,10 @@ mod org;
 #[cfg(test)]
 mod repo;
 
+#[cfg(test)]
+mod repo_history;
+
+#[cfg(test)]
+mod run_history;
+
 mod helpers;

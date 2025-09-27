@@ -8,8 +8,10 @@ use crate::tests::routes::org::helpers::{test_org_api, PASSWORD, USERNAMES};
 
 #[actix_web::test]
 async fn test_upsert_read_delete() {
-    const USERNAME: &'static str = USERNAMES[0];
-    const ORG: &'static str = crate::tests::routes::org::helpers::ORGS[0];
+    const TEST_ID: usize = 0;
+    const USERNAME: &'static str = USERNAMES[TEST_ID];
+    const ORG: &'static str = crate::tests::routes::org::helpers::ORGS[TEST_ID];
+
     let app = get_org_app!().await;
     let token = crate::tests::routes::helpers::retrieve_token(USERNAME, PASSWORD).await;
 
@@ -72,9 +74,11 @@ async fn test_upsert_read_delete() {
 
 #[actix_web::test]
 async fn test_update_org_you_do_not_own() {
-    const USERNAME: &'static str = USERNAMES[1];
-    const USERNAME1: &'static str = USERNAMES[2];
-    const ORG: &'static str = crate::tests::routes::org::helpers::ORGS[1];
+    const TEST_ID: usize = 1;
+    const USERNAME: &'static str = USERNAMES[TEST_ID];
+    const USERNAME1: &'static str = USERNAMES[USERNAMES.len() - 1];
+    const ORG: &'static str = crate::tests::routes::org::helpers::ORGS[TEST_ID];
+
     let app = get_org_app!().await;
     let token = crate::tests::routes::helpers::retrieve_token(USERNAME, PASSWORD).await;
     let user1_token = crate::tests::routes::helpers::retrieve_token(USERNAME1, PASSWORD).await;

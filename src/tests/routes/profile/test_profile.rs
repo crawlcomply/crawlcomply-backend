@@ -8,7 +8,9 @@ use crate::tests::routes::profile::helpers::{test_profile_api, PASSWORD, USERNAM
 
 #[actix_web::test]
 async fn test_upsert_read_delete() {
-    const USERNAME: &'static str = USERNAMES[0];
+    const TEST_ID: usize = 0;
+    const USERNAME: &'static str = USERNAMES[TEST_ID];
+
     let app = get_profile_app!().await;
     let token = crate::tests::routes::helpers::retrieve_token(USERNAME, PASSWORD).await;
     let alias = format!("{}-alias", USERNAME);

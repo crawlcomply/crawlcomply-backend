@@ -37,6 +37,10 @@ pub struct RepoHistory {
     pub security_scanner: Option<String>,
     /// Field representing column `git_tag`
     pub git_tag: Option<String>,
+    /// Field representing column `git_branch`
+    pub git_branch: Option<String>,
+    /// Field representing column `github_pr`
+    pub github_pr: Option<i32>,
     /// Field representing column `metrics`
     pub metrics: Option<serde_json::Value>,
     /// Field representing column `notes`
@@ -58,6 +62,8 @@ impl Default for RepoHistory {
             hosted_docs_url: None,
             security_scanner: None,
             git_tag: None,
+            git_branch: None,
+            github_pr: None,
             metrics: None,
             notes: None,
             created_at: Default::default(),
@@ -88,6 +94,10 @@ pub struct CreateRepoHistory {
     pub security_scanner: Option<String>,
     /// Field representing column `git_tag`
     pub git_tag: Option<String>,
+    /// Field representing column `git_branch`
+    pub git_branch: Option<String>,
+    /// Field representing column `github_pr`
+    pub github_pr: Option<i32>,
     /// Field representing column `metrics`
     pub metrics: Option<serde_json::Value>,
     /// Field representing column `notes`
@@ -107,6 +117,8 @@ impl Default for CreateRepoHistory {
             hosted_docs_url: None,
             security_scanner: None,
             git_tag: None,
+            git_branch: None,
+            github_pr: None,
             metrics: None,
             notes: None,
             id: None,
@@ -138,6 +150,10 @@ pub struct UpdateRepoHistory {
     pub security_scanner: Option<Option<String>>,
     /// Field representing column `git_tag`
     pub git_tag: Option<Option<String>>,
+    /// Field representing column `git_branch`
+    pub git_branch: Option<Option<String>>,
+    /// Field representing column `github_pr`
+    pub github_pr: Option<Option<i32>>,
     /// Field representing column `metrics`
     pub metrics: Option<Option<serde_json::Value>>,
     /// Field representing column `notes`
@@ -157,6 +173,8 @@ impl Default for UpdateRepoHistory {
             hosted_docs_url: None,
             security_scanner: None,
             git_tag: None,
+            git_branch: None,
+            github_pr: None,
             metrics: None,
             notes: None,
             created_at: None,

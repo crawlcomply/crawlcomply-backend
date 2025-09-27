@@ -99,6 +99,9 @@ diesel::table! {
         security_scanner -> Nullable<Text>,
         #[max_length = 244]
         git_tag -> Nullable<Varchar>,
+        #[max_length = 244]
+        git_branch -> Nullable<Varchar>,
+        github_pr -> Nullable<Int4>,
         metrics -> Nullable<Jsonb>,
         notes -> Nullable<Text>,
         created_at -> Timestamp,
@@ -115,6 +118,7 @@ diesel::table! {
         run -> Int4,
         created_at -> Timestamp,
         id -> Nullable<Text>,
+        status -> Nullable<Text>,
     }
 }
 
