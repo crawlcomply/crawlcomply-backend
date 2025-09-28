@@ -46,14 +46,11 @@ jobs:
           apt install -y libkeyutils1 libkrb5-3 libnettle8 libp11-kit0 libpq-dev libsasl2-2 libtasn1-6
       - name: run migrations
         run: |
-          cargo install --force cargo-binstall
-          cargo binstall diesel_cli
+          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/diesel-rs/diesel/releases/latest/download/diesel_cli-installer.sh | sh
           diesel migration run --migration-dir ../rust-actix-diesel-auth-scaffold/migrations
           diesel migration run
         env:
           DATABASE_URL: postgres://rest_api_user:rest_api_pass@postgres/rest_api_db
-          REDIS_URL: redis://valkey:6379
-          RUST_BACKTRACE: full
       - run: cargo build
         name: cargo build
       - run: cargo test

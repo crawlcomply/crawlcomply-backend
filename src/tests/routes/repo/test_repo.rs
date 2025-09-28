@@ -7,7 +7,7 @@ use actix_http::body::MessageBody as _;
 use bigdecimal::ToPrimitive;
 
 use crate::models::repo::Repo;
-use crate::tests::routes::repo::helpers::{test_repo_api, ORGS, PASSWORD, REPOS, USERNAMES};
+use crate::tests::routes::repo::helpers::{test_repo_api, NUM, ORGS, PASSWORD, REPOS, USERNAMES};
 use crate::{get_org_app, get_repo_app};
 
 #[actix_web::test]
@@ -39,7 +39,7 @@ async fn test_upsert_read_delete() {
         .unwrap_or_else(|_| panic!("{}", upserted_org_val));
 
     let create_repo = crate::models::repo::CreateRepo {
-        id: TEST_ID.to_i32().unwrap() + &15i32,
+        id: TEST_ID.to_i32().unwrap() + &15i32 + NUM as i32,
         name: REPO.to_owned(),
         description: Some(format!(
             "Repo made by {} with org {}",
@@ -147,7 +147,7 @@ async fn test_update_repo_you_do_not_own() {
         .unwrap_or_else(|_| panic!("{}", upserted_org_val));
 
     let create_repo = crate::models::repo::CreateRepo {
-        id: TEST_ID.to_i32().unwrap() + &15i32,
+        id: TEST_ID.to_i32().unwrap() + &15i32 + NUM as i32,
         name: repo_name.to_owned(),
         description: Some(format!(
             "Repo made by {} with org {}",

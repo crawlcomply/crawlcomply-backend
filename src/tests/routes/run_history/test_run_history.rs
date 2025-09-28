@@ -3,9 +3,8 @@ use core::assert_eq;
 use actix_http::body::MessageBody as _;
 
 use crate::models::run_history::RunHistory;
-use crate::tests::routes::repo_history::helpers::test_repo_history_api;
 use crate::tests::routes::run_history::helpers::{
-    test_run_history_api, ORGS, PASSWORD, REPOS, REPO_HASHES, USERNAMES,
+    test_run_history_api, NUM, ORGS, PASSWORD, REPOS, REPO_HASHES, USERNAMES,
 };
 use crate::{get_org_app, get_repo_app, get_repo_history_app, get_run_history_app};
 
@@ -48,6 +47,7 @@ async fn test_upsert_read_delete() {
             &token,
             ORG,
             &crate::models::repo::CreateRepo {
+                id: NUM as i32,
                 name: REPO.to_owned(),
                 org: ORG.to_owned(),
                 ..Default::default()
@@ -63,7 +63,7 @@ async fn test_upsert_read_delete() {
     let _upserted_repo_history: crate::models::repo_history::RepoHistory =
         actix_web::test::call_and_read_body_json(
             &app_repo_history,
-            test_repo_history_api::post(
+            crate::tests::routes::repo_history::helpers::test_repo_history_api::post(
                 &token,
                 ORG,
                 REPO,
@@ -129,7 +129,9 @@ async fn test_upsert_read_delete() {
     assert_eq!(
         actix_web::test::call_service(
             &app_repo_history,
-            test_repo_history_api::remove(&token, ORG, REPO, HASH)
+            crate::tests::routes::repo_history::helpers::test_repo_history_api::remove(
+                &token, ORG, REPO, HASH
+            )
         )
         .await
         .status(),
@@ -214,6 +216,7 @@ async fn test_update_run_history_you_do_not_own() {
             &token,
             ORG,
             &crate::models::repo::CreateRepo {
+                id: NUM as i32,
                 name: REPO.to_owned(),
                 org: ORG.to_owned(),
                 ..Default::default()
@@ -229,7 +232,7 @@ async fn test_update_run_history_you_do_not_own() {
     let _upserted_repo_history: crate::models::repo_history::RepoHistory =
         actix_web::test::call_and_read_body_json(
             &app_repo_history,
-            test_repo_history_api::post(
+            crate::tests::routes::repo_history::helpers::test_repo_history_api::post(
                 &token,
                 ORG,
                 REPO,
@@ -266,7 +269,9 @@ async fn test_update_run_history_you_do_not_own() {
     assert_eq!(
         actix_web::test::call_service(
             &app_repo_history,
-            test_repo_history_api::remove(&token, ORG, REPO, HASH)
+            crate::tests::routes::repo_history::helpers::test_repo_history_api::remove(
+                &token, ORG, REPO, HASH
+            )
         )
         .await
         .status(),

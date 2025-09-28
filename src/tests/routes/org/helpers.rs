@@ -1,3 +1,4 @@
+pub(crate) const NUM: u8 = 10;
 pub(crate) const USERNAMES: [&'static str; 4] =
     ["username10", "username11", "username12", "username13"];
 pub(crate) const PASSWORD: &'static str = "password";

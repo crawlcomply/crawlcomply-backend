@@ -4,7 +4,7 @@ use actix_http::body::MessageBody as _;
 
 use crate::models::repo_history::RepoHistory;
 use crate::tests::routes::repo_history::helpers::{
-    test_repo_history_api, ORGS, PASSWORD, REPOS, REPO_HASHES, USERNAMES,
+    test_repo_history_api, NUM, ORGS, PASSWORD, REPOS, REPO_HASHES, USERNAMES,
 };
 use crate::{get_org_app, get_repo_app, get_repo_history_app};
 
@@ -46,6 +46,7 @@ async fn test_upsert_read_delete() {
             &token,
             ORG,
             &crate::models::repo::CreateRepo {
+                id: NUM as i32,
                 name: REPO.to_owned(),
                 org: ORG.to_owned(),
                 ..Default::default()
@@ -179,6 +180,7 @@ async fn test_update_repo_history_you_do_not_own() {
             &token,
             ORG,
             &crate::models::repo::CreateRepo {
+                id: NUM as i32,
                 name: String::from(REPO),
                 ..Default::default()
             },
