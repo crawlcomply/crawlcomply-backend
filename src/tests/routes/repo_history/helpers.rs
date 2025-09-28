@@ -1,9 +1,14 @@
-pub(crate) const USERNAMES: [&'static str; 4] =
-    ["username30", "username31", "username32", "username33"];
+pub(crate) const USERNAMES: [&'static str; 5] = [
+    "username30",
+    "username31",
+    "username32",
+    "username33",
+    "username34",
+];
 pub(crate) const PASSWORD: &'static str = "password";
 
 pub(crate) const ORGS: [&'static str; 4] = ["org30", "org31", "org32", "org33"];
-pub(crate) const REPOS: [&'static str; 4] = ["repo20", "repo21", "repo22", "repo23"];
+pub(crate) const REPOS: [&'static str; 4] = ["repo30", "repo31", "repo32", "repo33"];
 
 pub(crate) const REPO_HASHES: [&'static str; 4] = [
     "05f0661bd71ce28832f111348153d7b0b701fad0",

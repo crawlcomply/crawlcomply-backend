@@ -58,8 +58,6 @@ pub struct CreateRunHistory {
     pub commit: String,
     /// Field representing column `full_name`
     pub full_name: String,
-    /// Field representing column `run`
-    pub run: i32,
     /// Field representing column `id`
     pub id: Option<String>,
     /// Field representing column `status`
@@ -71,7 +69,6 @@ impl Default for CreateRunHistory {
         Self {
             commit: String::new(),
             full_name: String::new(),
-            run: 0,
             id: None,
             status: None,
         }

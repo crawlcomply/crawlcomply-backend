@@ -3,7 +3,7 @@ pub(crate) const USERNAMES: [&'static str; 4] =
 pub(crate) const PASSWORD: &'static str = "password";
 
 pub(crate) const ORGS: [&'static str; 4] = ["org20", "org21", "org22", "org23"];
-pub(crate) const REPOS: [&'static str; 2] = ["repo10", "repo11"];
+pub(crate) const REPOS: [&'static str; 2] = ["repo20", "repo21"];
 
 #[macro_export]
 macro_rules! get_repo_app {

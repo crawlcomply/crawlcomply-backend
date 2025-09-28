@@ -15,11 +15,11 @@ use crate::schema::org as org_tbl;
 use crate::schema::run_history as run_history_tbl;
 use crate::schema::run_history::dsl::run_history;
 
-const RUN_HISTORY: &'static str = "run_history";
+const REPO_HISTORY: &'static str = "run_history";
 
 #[derive(serde::Deserialize, serde::Serialize)]
-struct RunHistoryVecObj {
-    run_histories: Vec<RunHistory>,
+pub(crate) struct RunHistoryVecObj {
+    pub(crate) runs: Vec<RunHistory>,
 }
 
 #[derive(Debug, serde::Deserialize)]
@@ -35,15 +35,9 @@ pub struct OrgRepoRunPath {
     pub run: i32,
 }
 
-#[derive(Debug, serde::Deserialize)]
-pub struct OrgRunHistoryPath {
-    pub org: String,
-    pub name: String,
-}
-
 /// Get RunHistory
 #[utoipa::path(
-    tag = RUN_HISTORY,
+    tag = REPO_HISTORY,
     responses(
         (status = 200, description = "RunHistory found in database"),
         (status = 404, description = "Not found")
@@ -67,13 +61,13 @@ pub async fn read_many(
         .load(&mut conn)?;
 
     Ok(actix_web::web::Json(RunHistoryVecObj {
-        run_histories: run_history_vec,
+        runs: run_history_vec,
     }))
 }
 
 /// Upsert RunHistory
 #[utoipa::path(
-    tag = RUN_HISTORY,
+    tag = REPO_HISTORY,
     responses(
         (status = 200, description = "RunHistory created"),
         (status = 500, description = "Internal Server Error")
@@ -95,6 +89,7 @@ pub async fn upsert(
     let mut conn = pool.get()?;
 
     let token_username = parse_bearer_token(credentials.token())?.username;
+
     let create_run_history = {
         let mut _form = form.into_inner();
         _form.full_name = format!("{org}/{repo}");
@@ -114,7 +109,11 @@ pub async fn upsert(
 
             diesel::insert_into(run_history_tbl::table)
                 .values(&create_run_history)
-                .on_conflict(run_history_tbl::full_name)
+                .on_conflict((
+                    run_history_tbl::full_name,
+                    run_history_tbl::commit,
+                    run_history_tbl::run,
+                ))
                 .do_update()
                 .set(UpdateRunHistory {
                     created_at: None,
@@ -140,7 +139,7 @@ pub async fn upsert(
             {
                 if r.message() == "division by zero" {
                     AuthError::Unauthorised(
-                        "Owner of run_history does not match owner of requestor",
+                        "Owner of run_history org does not match owner of requestor",
                     )
                 } else {
                     AuthError::from(diesel::result::Error::DatabaseError(
@@ -156,9 +155,9 @@ pub async fn upsert(
     Ok(actix_web::web::Json(run_history_upserted))
 }
 
-/// Get RunHistory by name
+/// Get RunHistory by org name & repo name & run number
 #[utoipa::path(
-    tag = RUN_HISTORY,
+    tag = REPO_HISTORY,
     responses(
         (status = 200, description = "RunHistory found from database"),
         (status = 404, description = "Not found")
@@ -166,8 +165,8 @@ pub async fn upsert(
     params(
         ("org", description = "Org name"),
         ("repo", description = "Repo name"),
-        ("run", description = "Run number"),
-    ),
+        ("run", description = "Run number")
+    )
 )]
 #[get("/org/{org}/repo/{repo}/run/{run}")]
 pub async fn read(
@@ -189,9 +188,9 @@ pub async fn read(
     ))
 }
 
-/// Delete RunHistory by name
+/// Delete RunHistory by org & repo & commit
 #[utoipa::path(
-    tag = RUN_HISTORY,
+    tag = REPO_HISTORY,
     responses(
         (status = 204, description = "RunHistory deleted"),
         (status = 404, description = "Not found")
@@ -199,7 +198,7 @@ pub async fn read(
     params(
         ("org", description = "Org name"),
         ("repo", description = "Repo name"),
-        ("run", description = "Run number"),
+        ("run", description = "Run number")
     ),
     security(("password"=[]))
 )]
