@@ -6,7 +6,7 @@ use diesel::{
     BoolExpressionMethods, Connection, ExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper,
 };
 
-use rust_actix_diesel_auth_scaffold::errors::AuthError;
+use rust_actix_diesel_auth_scaffold::errors::{AuthError, AuthErrorSchema};
 use rust_actix_diesel_auth_scaffold::routes::token::helpers::parse_bearer_token;
 use rust_actix_diesel_auth_scaffold::DbPool;
 
@@ -17,7 +17,7 @@ use crate::schema::repo_history::dsl::repo_history;
 
 const REPO_HISTORY: &'static str = "repo_history";
 
-#[derive(serde::Deserialize, serde::Serialize)]
+#[derive(serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
 struct RepoHistoryVecObj {
     repo_histories: Vec<RepoHistory>,
 }
@@ -35,12 +35,12 @@ pub struct OrgRepoHashPath {
     pub hash: String,
 }
 
-/// Get RepoHistory
+/// Get `RepoHistory`-ies
 #[utoipa::path(
     tag = REPO_HISTORY,
     responses(
-        (status = 200, description = "RepoHistory found in database"),
-        (status = 404, description = "Not found")
+        (status = 200, description = "`RepoHistory`-ies", body = RepoHistoryVecObj),
+        (status = 404, description = "Not found", body = AuthErrorSchema)
     ),
     params(
         ("org", description = "Org name"),
@@ -65,12 +65,12 @@ pub async fn read_many(
     }))
 }
 
-/// Upsert RepoHistory
+/// Upsert `RepoHistory`
 #[utoipa::path(
     tag = REPO_HISTORY,
     responses(
-        (status = 200, description = "RepoHistory created"),
-        (status = 500, description = "Internal Server Error")
+        (status = 200, description = "RepoHistory created", body = RepoHistory),
+        (status = 500, description = "Internal Server Error", body = AuthErrorSchema)
     ),
     params(
         ("org", description = "Org name"),
@@ -196,12 +196,12 @@ pub async fn upsert(
     Ok(actix_web::web::Json(repo_history_upserted))
 }
 
-/// Get RepoHistory by org name & repo name
+/// Get `RepoHistory` by org & repo & commit
 #[utoipa::path(
     tag = REPO_HISTORY,
     responses(
-        (status = 200, description = "RepoHistory found from database"),
-        (status = 404, description = "Not found")
+        (status = 200, description = "RepoHistory found from database", body = RepoHistory),
+        (status = 404, description = "Not found", body = AuthErrorSchema)
     ),
     params(
         ("org", description = "Org name"),
@@ -229,12 +229,12 @@ pub async fn read(
     ))
 }
 
-/// Delete RepoHistory by org & repo & commit
+/// Delete `RepoHistory` by org & repo & commit
 #[utoipa::path(
     tag = REPO_HISTORY,
     responses(
         (status = 204, description = "RepoHistory deleted"),
-        (status = 404, description = "Not found")
+        (status = 404, description = "Not found", body = AuthErrorSchema)
     ),
     params(
         ("org", description = "Org name"),

@@ -4,7 +4,7 @@ use diesel::query_dsl::methods::FilterDsl;
 use diesel::OptionalExtension;
 use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper};
 
-use rust_actix_diesel_auth_scaffold::errors::AuthError;
+use rust_actix_diesel_auth_scaffold::errors::{AuthError, AuthErrorSchema};
 use rust_actix_diesel_auth_scaffold::routes::token::helpers::parse_bearer_token;
 use rust_actix_diesel_auth_scaffold::DbPool;
 
@@ -14,17 +14,17 @@ use crate::schema::profile::dsl::profile;
 
 const PROFILE: &'static str = "profile";
 
-#[derive(serde::Deserialize, serde::Serialize)]
+#[derive(serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
 struct ProfileVecObj {
     profiles: Vec<Profile>,
 }
 
-/// Get Profile
+/// Get all `Profile`s
 #[utoipa::path(
     tag = PROFILE,
     responses(
-        (status = 200, description = "Profile found in database"),
-        (status = 404, description = "Not found")
+        (status = 200, description = "`Profile`s", body = ProfileVecObj),
+        (status = 404, description = "Not found", body = AuthErrorSchema)
     )
 )]
 #[get("/profiles")]
@@ -38,13 +38,13 @@ pub async fn read_many(
     }))
 }
 
-/// Upsert Model
+/// Upsert `Profile`
 #[utoipa::path(
     tag = PROFILE,
     responses(
-        (status = 200, description = "Profile created"),
-        (status = 401, description = "Unauthorised"),
-        (status = 500, description = "Internal Server Error")
+        (status = 200, description = "Profile created", body = Profile),
+        (status = 401, description = "Unauthorised", body = AuthErrorSchema),
+        (status = 500, description = "Internal Server Error", body = AuthErrorSchema)
     ),
     security(("password"=[]))
 )]
@@ -98,12 +98,12 @@ pub async fn upsert(
     }
 }
 
-/// Get Profile
+/// Get `Profile` of current user
 #[utoipa::path(
     tag = PROFILE,
     responses(
-        (status = 200, description = "Profile found from database"),
-        (status = 404, description = "Not found")
+        (status = 200, description = "Profile found from database", body = Profile),
+        (status = 404, description = "Not found", body = AuthErrorSchema)
     ),
     security(("password"=[]))
 )]
@@ -124,12 +124,12 @@ pub async fn read(
     ))
 }
 
-/// Delete Profile
+/// Delete `Profile` of current user
 #[utoipa::path(
     tag = PROFILE,
     responses(
         (status = 204, description = "Profile deleted"),
-        (status = 404, description = "Not found")
+        (status = 404, description = "Not found", body = AuthErrorSchema)
     ),
     security(("password"=[]))
 )]

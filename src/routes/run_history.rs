@@ -6,7 +6,7 @@ use diesel::{
     BoolExpressionMethods, Connection, ExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper,
 };
 
-use rust_actix_diesel_auth_scaffold::errors::AuthError;
+use rust_actix_diesel_auth_scaffold::errors::{AuthError, AuthErrorSchema};
 use rust_actix_diesel_auth_scaffold::routes::token::helpers::parse_bearer_token;
 use rust_actix_diesel_auth_scaffold::DbPool;
 
@@ -17,7 +17,7 @@ use crate::schema::run_history::dsl::run_history;
 
 const REPO_HISTORY: &'static str = "run_history";
 
-#[derive(serde::Deserialize, serde::Serialize)]
+#[derive(serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
 pub(crate) struct RunHistoryVecObj {
     pub(crate) runs: Vec<RunHistory>,
 }
@@ -35,12 +35,12 @@ pub struct OrgRepoRunPath {
     pub run: i32,
 }
 
-/// Get RunHistory
+/// Get `RunHistory` by org & repo
 #[utoipa::path(
     tag = REPO_HISTORY,
     responses(
-        (status = 200, description = "RunHistory found in database"),
-        (status = 404, description = "Not found")
+        (status = 200, description = "`RunHistory`-ies", body = RunHistoryVecObj),
+        (status = 404, description = "Not found", body = AuthErrorSchema)
     ),
     params(
         ("org", description = "Org name"),
@@ -65,12 +65,12 @@ pub async fn read_many(
     }))
 }
 
-/// Upsert RunHistory
+/// Upsert `RunHistory`
 #[utoipa::path(
     tag = REPO_HISTORY,
     responses(
-        (status = 200, description = "RunHistory created"),
-        (status = 500, description = "Internal Server Error")
+        (status = 200, description = "RunHistory created", body = RunHistory),
+        (status = 500, description = "Internal Server Error", body = AuthErrorSchema)
     ),
     params(
         ("org", description = "Org name"),
@@ -155,12 +155,12 @@ pub async fn upsert(
     Ok(actix_web::web::Json(run_history_upserted))
 }
 
-/// Get RunHistory by org name & repo name & run number
+/// Get `RunHistory` by org & repo & run
 #[utoipa::path(
     tag = REPO_HISTORY,
     responses(
-        (status = 200, description = "RunHistory found from database"),
-        (status = 404, description = "Not found")
+        (status = 200, description = "RunHistory found from database", body = RunHistory),
+        (status = 404, description = "Not found", body = AuthErrorSchema)
     ),
     params(
         ("org", description = "Org name"),
@@ -188,12 +188,12 @@ pub async fn read(
     ))
 }
 
-/// Delete RunHistory by org & repo & commit
+/// Delete `RunHistory` by org & repo & run
 #[utoipa::path(
     tag = REPO_HISTORY,
     responses(
         (status = 204, description = "RunHistory deleted"),
-        (status = 404, description = "Not found")
+        (status = 404, description = "Not found", body = AuthErrorSchema)
     ),
     params(
         ("org", description = "Org name"),

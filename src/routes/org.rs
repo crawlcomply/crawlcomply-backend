@@ -6,7 +6,7 @@ use diesel::{
     SelectableHelper,
 };
 
-use rust_actix_diesel_auth_scaffold::errors::AuthError;
+use rust_actix_diesel_auth_scaffold::errors::{AuthError, AuthErrorSchema};
 use rust_actix_diesel_auth_scaffold::routes::token::helpers::parse_bearer_token;
 use rust_actix_diesel_auth_scaffold::DbPool;
 
@@ -16,17 +16,17 @@ use crate::schema::org::dsl::org;
 
 const ORG: &'static str = "org";
 
-#[derive(serde::Deserialize, serde::Serialize)]
+#[derive(serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
 struct OrgVecObj {
     orgs: Vec<Org>,
 }
 
-/// Get Org
+/// Get all `Org`s
 #[utoipa::path(
     tag = ORG,
     responses(
-        (status = 200, description = "Org found in database"),
-        (status = 404, description = "Not found")
+        (status = 200, description = "`Org`s", body = OrgVecObj),
+        (status = 404, description = "Not found", body = AuthErrorSchema)
     )
 )]
 #[get("/org")]
@@ -40,12 +40,12 @@ pub async fn read_many(
     Ok(actix_web::web::Json(OrgVecObj { orgs: org_vec }))
 }
 
-/// Upsert Org
+/// Upsert `Org`
 #[utoipa::path(
     tag = ORG,
     responses(
-        (status = 200, description = "Org created/updated"),
-        (status = 500, description = "Internal Server Error")
+        (status = 200, description = "Org created/updated", body = Org),
+        (status = 500, description = "Internal Server Error", body = AuthErrorSchema)
     ),
     security(("password"=[]))
 )]
@@ -88,12 +88,12 @@ pub async fn upsert(
     }
 }
 
-/// Get Org by name
+/// Get `Org` by name
 #[utoipa::path(
     tag = ORG,
     responses(
-        (status = 200, description = "Org found from database"),
-        (status = 404, description = "Not found")
+        (status = 200, description = "Org found from database", body = Org),
+        (status = 404, description = "Not found", body = AuthErrorSchema)
     ),
     params(
         ("name", description = "Org name"),
@@ -110,12 +110,12 @@ pub async fn read(
     ))
 }
 
-/// Delete Org by name
+/// Delete `Org` by name
 #[utoipa::path(
     tag = ORG,
     responses(
         (status = 204, description = "Org deleted"),
-        (status = 404, description = "Not found")
+        (status = 404, description = "Not found", body = AuthErrorSchema)
     ),
     params(
         ("name", description = "Org name"),

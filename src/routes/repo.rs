@@ -6,7 +6,7 @@ use diesel::{
     BoolExpressionMethods, Connection, ExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper,
 };
 
-use rust_actix_diesel_auth_scaffold::errors::AuthError;
+use rust_actix_diesel_auth_scaffold::errors::{AuthError, AuthErrorSchema};
 use rust_actix_diesel_auth_scaffold::routes::token::helpers::parse_bearer_token;
 use rust_actix_diesel_auth_scaffold::DbPool;
 
@@ -17,7 +17,7 @@ use crate::schema::repo::dsl::repo;
 
 const REPO: &'static str = "repo";
 
-#[derive(serde::Deserialize, serde::Serialize)]
+#[derive(serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
 struct RepoVecObj {
     repos: Vec<Repo>,
 }
@@ -28,12 +28,12 @@ pub struct OrgRepoPath {
     pub name: String,
 }
 
-/// Get Repo
+/// Get all `Repo`s in given `Org`
 #[utoipa::path(
     tag = REPO,
     responses(
-        (status = 200, description = "Repo found in database"),
-        (status = 404, description = "Not found")
+        (status = 200, description = "`Repo`s", body = RepoVecObj),
+        (status = 404, description = "Not found", body = AuthErrorSchema)
     ),
     params(
         ("org", description = "Org name")
@@ -54,12 +54,12 @@ pub async fn read_many(
     Ok(actix_web::web::Json(RepoVecObj { repos: repo_vec }))
 }
 
-/// Upsert Repo
+/// Upsert `Repo`
 #[utoipa::path(
     tag = REPO,
     responses(
-        (status = 200, description = "Repo created"),
-        (status = 500, description = "Internal Server Error")
+        (status = 200, description = "Repo created", body = Repo),
+        (status = 500, description = "Internal Server Error", body = AuthErrorSchema)
     ),
     params(
         ("org", description = "Org name")
@@ -204,12 +204,12 @@ pub async fn upsert(
     Ok(actix_web::web::Json(repo_upserted))
 }
 
-/// Get Repo by name
+/// Get `Repo` by org & name
 #[utoipa::path(
     tag = REPO,
     responses(
-        (status = 200, description = "Repo found from database"),
-        (status = 404, description = "Not found")
+        (status = 200, description = "Repo found from database", body = Repo),
+        (status = 404, description = "Not found", body = AuthErrorSchema)
     ),
     params(
         ("org", description = "Org name"),
@@ -232,12 +232,12 @@ pub async fn read(
     ))
 }
 
-/// Delete Repo by name
+/// Delete `Repo` by org & name
 #[utoipa::path(
     tag = REPO,
     responses(
         (status = 204, description = "Repo deleted"),
-        (status = 404, description = "Not found")
+        (status = 404, description = "Not found", body = AuthErrorSchema)
     ),
     params(
         ("org", description = "Org name"),
